@@ -1,0 +1,20 @@
+[
+  {
+    "JSON": "JavaScript Object Notation"
+  },
+  {
+    "name": "Zezinho",
+    "age": 34,
+    "job": "programer"
+  },
+  {
+    "name": "Anita",
+    "age": 24,
+    "job": "Developer"
+  },
+  {
+    "name": "Pedro",
+    "age": 28,
+    "job": "Design"
+  }
+]
