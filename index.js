@@ -43,6 +43,20 @@ app.put('/users/:id', (request, response) => {
   users[index] = updatedUser
   return response.json(updatedUser)
 })
+
+// deletar usuário
+app.delete('/users/:id', (request, response) => {
+  const { id } = request.params
+  const index = users.findIndex(user => user.id === id)
+
+  if (index < 0) return response.status(404).json({message: 'User Not found'})
+
+  users.splice(index,1)
+
+  return response.status(204).json()
+
+})
+
 // criar porta
 app.listen(port, () => {
   console.log(`🚀 server started on port ${port}`)
