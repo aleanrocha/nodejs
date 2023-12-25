@@ -8,6 +8,8 @@
   - PUT/PATCH => Altera/Atualiza informações no Back-End
   - DELETE => Deleta informações no Back-End
 
+  - Meddlewares => INTERCEPTADOR - Tem o poder de parar ou alterar dados da requisição
+
 */
 
 const express = require('express')
@@ -18,8 +20,31 @@ app.use(express.json())
 
 const users = []
 
+/*
+const myFirstMiddleware = (request, response, next) => {
+  console.log('Eu Middleware fui chamado e interceptei a rota!')
+
+  next() // dar continuidade ao fluxo da aplicação
+  
+  console.log('fINALIZANDO!!!')
+}
+*/
+
+// chamo o middleware
+//app.use(myFirstMiddleware)
+
+const checkUserId = (request, response, next) => {
+  const { id } = request.params
+  const index = users.findIndex(user => user.id === id)
+  if (index < 0) return response.status(404).json({error: 'User Not found'})
+  request.userIndex = index
+  request.userId = id
+  next()
+}
+
 // criar rota
 app.get('/users/', (request, response) => {
+  console.log('A rota foi chamada!')
   // retorna todos os usuários
   return response.json(users)
 })
@@ -33,28 +58,20 @@ app.post('/users/', (request, response) => {
 })
 
 // atualizar usuário
-app.put('/users/:id', (request, response) => {
-  const { id } = request.params
+app.put('/users/:id', checkUserId, (request, response) => {
   const { name, age } = request.body
-  const updatedUser = {id, name, age}
-  const index = users.findIndex(user => user.id === id)
-  if (index < 0) return response.status(404).json({message: 'Not found'})
-  console.log(index, users[index])
+  const index = request.userIndex
+  const id = request.userId
+  const updatedUser = {id, name, age}  
   users[index] = updatedUser
   return response.json(updatedUser)
 })
 
 // deletar usuário
-app.delete('/users/:id', (request, response) => {
-  const { id } = request.params
-  const index = users.findIndex(user => user.id === id)
-
-  if (index < 0) return response.status(404).json({message: 'User Not found'})
-
+app.delete('/users/:id', checkUserId, (request, response) => {
+  const index = request.userIndex
   users.splice(index,1)
-
   return response.status(204).json()
-
 })
 
 // criar porta
