@@ -22,14 +22,29 @@ server.use(express.json())
 
 const users = []
 
+// middleware - check ID
+const checkUserId = (request, response, next) => {
+  const { id } = request.params
+  const index = users.findIndex(user => user.id === id)
+  if (index < 0) return response.status(404).json({error:'⚠️ User not found!'})
+  request.userId = id
+  request.userIndex = index
+  next()
+}
+
+// middleware - print request
+const printRequest = (request, response, next) => {
+  console.log(request.method, request.url)
+  next()
+}
 
 // get order list
-server.get('/order', (request, response) => {
+server.get('/order', printRequest, (request, response) => {
   return response.json(users)
 })
 
 // create new order
-server.post('/order', (request, response) => {
+server.post('/order', printRequest, (request, response) => {
   const { order, clientName, price, status } = request.body
   const user = {id:uuid.v4(), order, clientName, price, status}
   users.push(user)
@@ -37,34 +52,29 @@ server.post('/order', (request, response) => {
 })
 
 // change order
-server.put('/order/:id', (request, response) => {
+server.put('/order/:id', printRequest, checkUserId, (request, response) => {
   const {order, clientName, price, status } = request.body
-  const { id } = request.params
-  const index = users.findIndex(user => user.id === id)
-  if (index < 0) return response.status(404).json({error: 'User Not found'})
+  const index = request.userIndex
+  const id = request.userId
   const updatedUser = {id, order, clientName, price, status}
   users[index] = updatedUser
   return response.json(updatedUser)
 })
 
 // delete order
-server.delete('/order/:id', (request, response) => {
-  const { id } = request.params
-  const index = users.findIndex(user => user.id === id)
-  if (index < 0) return response.status(404).json({error: 'User not found'})
+server.delete('/order/:id', printRequest, checkUserId, (request, response) => {
+  const index = request.userIndex
   users.splice(index,1)
   return response.status(204).json()
 })
 
 // change order status
-server.patch('/order/:id', (request, response) => {
-  const { id } = request.params
-  const {order, clientName, price, status } = request.body
-  const index = users.findIndex(user => user.id === id)
-  if (index < 0) return response.status(404).json({error: 'User not found'})
-  const updatedStatus = {id, order,clientName, price, status: 'Pronto'}
-  users[index] = updatedStatus
-  return response.json(updatedStatus)
+server.patch('/order/:id', printRequest, checkUserId, (request, response) => {
+  const { status } = request.body
+  const id = request.userId
+  const index = request.userIndex
+  users[index].status = 'Pronto'
+  return response.json(users[index])
 })
 
 // start server
