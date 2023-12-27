@@ -51,6 +51,12 @@ server.post('/order', printRequest, (request, response) => {
   return response.status(201).json(user)
 })
 
+// get specific order
+server.get('/order/:id', printRequest, checkUserId, (request, response) => {
+  const index = request.userIndex
+  return response.json(users[index])
+})
+
 // change order
 server.put('/order/:id', printRequest, checkUserId, (request, response) => {
   const {order, clientName, price, status } = request.body
